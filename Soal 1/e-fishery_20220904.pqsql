@@ -1,0 +1,408 @@
+--
+-- PostgreSQL database dump
+--
+
+-- Dumped from database version 13.8 (Debian 13.8-1.pgdg110+1)
+-- Dumped by pg_dump version 13.8 (Debian 13.8-1.pgdg110+1)
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
+
+--
+-- Name: customers; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.customers (
+    id integer NOT NULL,
+    name character varying
+);
+
+
+ALTER TABLE public.customers OWNER TO postgres;
+
+--
+-- Name: dim_customer; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.dim_customer (
+    id integer,
+    name character varying
+);
+
+
+ALTER TABLE public.dim_customer OWNER TO postgres;
+
+--
+-- Name: dim_date; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.dim_date (
+    id integer,
+    date date,
+    month integer,
+    quarter_of_year integer,
+    year integer,
+    is_weekend boolean
+);
+
+
+ALTER TABLE public.dim_date OWNER TO postgres;
+
+--
+-- Name: fact_order_accumulating; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.fact_order_accumulating (
+    order_date_id integer,
+    invoice_date_id integer,
+    payment_date_id integer,
+    customer_id integer,
+    order_number character varying,
+    invoice_number character varying,
+    payment_number character varying,
+    total_order_quantity integer,
+    total_order_usd_amount numeric,
+    order_to_invoice_lag_days integer,
+    invoice_to_payment_lag_days integer
+);
+
+
+ALTER TABLE public.fact_order_accumulating OWNER TO postgres;
+
+--
+-- Name: fact_order_accumulating_alt; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.fact_order_accumulating_alt (
+    date_id integer,
+    customer_id integer,
+    order_number character varying,
+    invoice_number character varying,
+    payment_number character varying,
+    total_order_quantity integer,
+    total_order_usd_amount numeric,
+    order_to_invoice_lag_days integer,
+    invoice_to_payment_lag_days integer,
+    ds text
+);
+
+
+ALTER TABLE public.fact_order_accumulating_alt OWNER TO postgres;
+
+--
+-- Name: invoices; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.invoices (
+    invoice_number character varying NOT NULL,
+    order_number character varying,
+    date date
+);
+
+
+ALTER TABLE public.invoices OWNER TO postgres;
+
+--
+-- Name: order_lines; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.order_lines (
+    order_line_number character varying NOT NULL,
+    order_number character varying,
+    product_id integer,
+    quantity integer,
+    usd_amount numeric
+);
+
+
+ALTER TABLE public.order_lines OWNER TO postgres;
+
+--
+-- Name: orders; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.orders (
+    order_number character varying NOT NULL,
+    customer_id integer,
+    date date
+);
+
+
+ALTER TABLE public.orders OWNER TO postgres;
+
+--
+-- Name: payments; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.payments (
+    payment_number character varying NOT NULL,
+    invoice_number character varying,
+    date date
+);
+
+
+ALTER TABLE public.payments OWNER TO postgres;
+
+--
+-- Name: products; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.products (
+    id integer NOT NULL,
+    name character varying
+);
+
+
+ALTER TABLE public.products OWNER TO postgres;
+
+--
+-- Data for Name: customers; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.customers (id, name) FROM stdin;
+3923	Ani
+3924	Budi
+3925	Caca
+\.
+
+
+--
+-- Data for Name: dim_customer; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.dim_customer (id, name) FROM stdin;
+3923	Ani
+3924	Budi
+3925	Caca
+\.
+
+
+--
+-- Data for Name: dim_date; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.dim_date (id, date, month, quarter_of_year, year, is_weekend) FROM stdin;
+1	2022-09-04	9	3	2022	t
+\.
+
+
+--
+-- Data for Name: fact_order_accumulating; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.fact_order_accumulating (order_date_id, invoice_date_id, payment_date_id, customer_id, order_number, invoice_number, payment_number, total_order_quantity, total_order_usd_amount, order_to_invoice_lag_days, invoice_to_payment_lag_days) FROM stdin;
+1	1	1	3923	ORD-223	INV-525	PYM-777	3	213.50	3	3
+1	1	1	3924	ORD-134	INV-587	PYM-761	1	3.60	9	29
+1	1	1	3925	ORD-225	\N	\N	1	42.00	\N	\N
+1	1	1	3924	ORD-201	INV-581	PYM-802	1	73.50	4	10
+1	1	1	3925	ORD-181	INV-549	\N	1	94.50	6	\N
+1	1	1	3923	ORD-206	INV-557	PYM-792	1	10.80	7	18
+1	1	1	3924	ORD-170	INV-554	\N	2	100.00	13	\N
+1	1	1	3924	ORD-142	INV-642	PYM-817	1	10.80	6	26
+1	1	1	3924	ORD-240	\N	\N	1	70.40	\N	\N
+1	1	1	3923	ORD-205	INV-647	PYM-803	1	123.20	9	1
+\.
+
+
+--
+-- Data for Name: fact_order_accumulating_alt; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.fact_order_accumulating_alt (date_id, customer_id, order_number, invoice_number, payment_number, total_order_quantity, total_order_usd_amount, order_to_invoice_lag_days, invoice_to_payment_lag_days, ds) FROM stdin;
+1	3923	ORD-223	INV-525	PYM-777	3	213.50	3	3	20220904
+1	3924	ORD-134	INV-587	PYM-761	1	3.60	9	29	20220904
+1	3925	ORD-225	\N	\N	1	42.00	\N	\N	20220904
+1	3924	ORD-201	INV-581	PYM-802	1	73.50	4	10	20220904
+1	3925	ORD-181	INV-549	\N	1	94.50	6	\N	20220904
+1	3923	ORD-206	INV-557	PYM-792	1	10.80	7	18	20220904
+1	3924	ORD-170	INV-554	\N	2	100.00	13	\N	20220904
+1	3924	ORD-142	INV-642	PYM-817	1	10.80	6	26	20220904
+1	3924	ORD-240	\N	\N	1	70.40	\N	\N	20220904
+1	3923	ORD-205	INV-647	PYM-803	1	123.20	9	1	20220904
+\.
+
+
+--
+-- Data for Name: invoices; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.invoices (invoice_number, order_number, date) FROM stdin;
+INV-554	ORD-170	2020-03-09
+INV-525	ORD-223	2020-03-05
+INV-549	ORD-181	2020-07-19
+INV-642	ORD-142	2020-08-22
+INV-557	ORD-206	2020-09-17
+INV-581	ORD-201	2020-10-13
+INV-587	ORD-134	2020-12-13
+INV-647	ORD-205	2021-02-01
+\.
+
+
+--
+-- Data for Name: order_lines; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.order_lines (order_line_number, order_number, product_id, quantity, usd_amount) FROM stdin;
+ORD-170-01	ORD-170	478	5	88.00
+ORD-170-02	ORD-170	479	10	12.00
+ORD-223-01	ORD-223	479	5	6.00
+ORD-223-02	ORD-223	478	10	176.00
+ORD-223-03	ORD-223	477	3	31.50
+ORD-225-01	ORD-225	477	4	42.00
+ORD-181-01	ORD-181	477	9	94.50
+ORD-142-01	ORD-142	479	9	10.80
+ORD-206-01	ORD-206	479	9	10.80
+ORD-201-01	ORD-201	477	7	73.50
+ORD-240-01	ORD-240	478	4	70.40
+ORD-134-01	ORD-134	479	3	3.60
+ORD-205-01	ORD-205	478	7	123.20
+\.
+
+
+--
+-- Data for Name: orders; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.orders (order_number, customer_id, date) FROM stdin;
+ORD-170	3924	2020-02-25
+ORD-223	3923	2020-03-02
+ORD-225	3925	2020-06-01
+ORD-181	3925	2020-07-13
+ORD-142	3924	2020-08-16
+ORD-206	3923	2020-09-10
+ORD-201	3924	2020-10-09
+ORD-240	3924	2020-11-16
+ORD-134	3924	2020-12-04
+ORD-205	3923	2021-01-23
+\.
+
+
+--
+-- Data for Name: payments; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.payments (payment_number, invoice_number, date) FROM stdin;
+PYM-777	INV-525	2020-03-08
+PYM-817	INV-642	2020-09-17
+PYM-792	INV-557	2020-10-05
+PYM-802	INV-581	2020-10-23
+PYM-761	INV-587	2021-01-11
+PYM-803	INV-647	2021-02-02
+\.
+
+
+--
+-- Data for Name: products; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.products (id, name) FROM stdin;
+477	Laptop X
+478	Phone Y
+479	Tablet Z
+\.
+
+
+--
+-- Name: customers customers_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.customers
+    ADD CONSTRAINT customers_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: invoices invoices_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.invoices
+    ADD CONSTRAINT invoices_pkey PRIMARY KEY (invoice_number);
+
+
+--
+-- Name: order_lines order_lines_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.order_lines
+    ADD CONSTRAINT order_lines_pkey PRIMARY KEY (order_line_number);
+
+
+--
+-- Name: orders orders_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.orders
+    ADD CONSTRAINT orders_pkey PRIMARY KEY (order_number);
+
+
+--
+-- Name: payments payments_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.payments
+    ADD CONSTRAINT payments_pkey PRIMARY KEY (payment_number);
+
+
+--
+-- Name: products products_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.products
+    ADD CONSTRAINT products_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: invoices invoices_order_number_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.invoices
+    ADD CONSTRAINT invoices_order_number_fkey FOREIGN KEY (order_number) REFERENCES public.orders(order_number);
+
+
+--
+-- Name: order_lines order_lines_order_number_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.order_lines
+    ADD CONSTRAINT order_lines_order_number_fkey FOREIGN KEY (order_number) REFERENCES public.orders(order_number);
+
+
+--
+-- Name: order_lines order_lines_product_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.order_lines
+    ADD CONSTRAINT order_lines_product_id_fkey FOREIGN KEY (product_id) REFERENCES public.products(id);
+
+
+--
+-- Name: orders orders_customer_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.orders
+    ADD CONSTRAINT orders_customer_id_fkey FOREIGN KEY (customer_id) REFERENCES public.customers(id);
+
+
+--
+-- Name: payments payments_invoice_number_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.payments
+    ADD CONSTRAINT payments_invoice_number_fkey FOREIGN KEY (invoice_number) REFERENCES public.invoices(invoice_number);
+
+
+--
+-- PostgreSQL database dump complete
+--
+
